@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="f9e4bdea-9578-4854-9b0f-6d814a63ab4f" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<db:config name="Derby_Database_Connector" doc:name="Database Config" doc:id="564c5954-15dc-4b0d-85a4-8c5fe1191854" >
+		<db:generic-connection url="jdbc:derby://localhost:1527/memory:training" driverClassName="org.apache.derby.jdbc.ClientDriver" />
+	</db:config>
+	<db:config name="MySQL_Database_Connector" doc:name="Database Config" doc:id="de7b621f-c634-4abe-bbbc-151b0b1b4d96" >
+		<db:my-sql-connection host="iltdb.learn.mulesoft.com" port="3306" user="mule" password="mule" database="training" />
+	
+</db:config>	
+	<flow name="getFlights" doc:id="ca728134-abb4-4b34-8de9-c0d3f1dfb683" >
+		<db:select doc:name="Select" doc:id="1557c550-4cb1-457a-80b1-b6d4dc547b95" config-ref="MySQL_Database_Connector">
+			<db:sql >SELECT *
+	FROM american</db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="2d900eb4-8046-4069-acac-3db5f93d9313" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	ID: payload01.ID,
+	code: (payload01.code1 default "") ++ (payload01.code2 default ""),
+	price: payload01.price default 0,
+	departureDate: payload01.takeOffDate as String default "",
+	origin: payload01.fromAirport default "",
+	destination: payload01.toAirport default "",
+	emptySeats: payload01.seatsAvailable default 0,
+	plane: {
+		"type": payload01.planeType default "",
+		totalSeats: payload01.totalSeats default 0
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="c6b7e7e1-ec49-40b3-9de7-e9dd4eec2500" message="#[payload]"/>
+	</flow>
+
+	<flow name="getFlightByID" doc:id="91799e25-68b5-42c2-a24b-8843c287998f" >
+		<db:select doc:name="Select" doc:id="1ccd2ec7-13a4-4209-a93f-3639f23b64a1" config-ref="MySQL_Database_Connector">
+			<db:sql >SELECT *
+	FROM american
+	WHERE ID = :ID</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	ID: message.attributes.uriParams.ID
+}]]]></db:input-parameters>
+		
+</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="3c9eb7f2-998e-42d7-b0fa-ad382962eb5b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	ID: payload01.ID,
+	code: (payload01.code1 default "") ++ (payload01.code2 default ""),
+	price: payload01.price default 0,
+	departureDate: payload01.takeOffDate as String default "",
+	origin: payload01.fromAirport default "",
+	destination: payload01.toAirport default "",
+	emptySeats: payload01.seatsAvailable default 0,
+	plane: {
+		"type": payload01.planeType default "",
+		totalSeats: payload01.totalSeats default 0
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="0232eefa-4fbe-490c-8468-ab21d70b3872" message="#[payload]"/>
+	</flow>
+	<flow name="postFlight" doc:id="936c6e86-95da-4ce5-a8c9-99a4a9d7eb47" >
+		<set-payload value='{"message": "Flight added (but not really)"}' doc:name="Set Payload" doc:id="9962a2c4-762c-43ff-be4f-c742b795fb3a" />
+	</flow>
+
+
+
+
+</mule>
