@@ -9,9 +9,6 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="f9e4bdea-9578-4854-9b0f-6d814a63ab4f" >
 		<http:listener-connection host="0.0.0.0" port="8081" />
 	</http:listener-config>
-	<db:config name="Derby_Database_Connector" doc:name="Database Config" doc:id="564c5954-15dc-4b0d-85a4-8c5fe1191854" >
-		<db:generic-connection url="jdbc:derby://localhost:1527/memory:training" driverClassName="org.apache.derby.jdbc.ClientDriver" />
-	</db:config>
 	<db:config name="MySQL_Database_Connector" doc:name="Database Config" doc:id="de7b621f-c634-4abe-bbbc-151b0b1b4d96" >
 		<db:my-sql-connection host="iltdb.learn.mulesoft.com" port="3306" user="mule" password="mule" database="training" />
 	
